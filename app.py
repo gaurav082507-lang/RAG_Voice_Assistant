@@ -255,7 +255,7 @@ if run_clicked:
         f.write(audio_source.getbuffer())
 
     with st.spinner("Transcribing your question..."):
-        chunk_audio_path = audio_to_chunks(audio_path, output_dir=os.path.join(work_dir, "chunks"))
+        chunk_audio_path = audio_chunks(audio_path, output_dir=os.path.join(work_dir, "chunks"))
         query = transcribe_all(chunk_audio_path=chunk_audio_path)
         st.session_state.transcript = query
 
