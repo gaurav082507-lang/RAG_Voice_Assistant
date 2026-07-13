@@ -60,7 +60,7 @@ def transcribe_all(chunk_audio_path):
     
     return transcription
 
-def text_to_speech(response:str):
+def text_to_speech(response:str,output_path:str):
     subprocess.run([
         "piper",
         "--model", "en_US-lessac-medium.onnx",
