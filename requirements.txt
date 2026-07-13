@@ -1,0 +1,10 @@
+streamlit
+python-dotenv
+langchain-mistralai
+langchain-community
+langchain-text-splitters
+langchain-core
+faiss-cpu
+pydub
+openai-whisper
+pypdf
