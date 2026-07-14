@@ -33,7 +33,7 @@ def build_retriever(file_path:str):
     )
     return retriever
 
-def audio_chunks(audio_path:str, output_dir: str = "chunks"):
+def audio_to_chunks(audio_path:str, output_dir: str = "chunks"):
     os.makedirs(output_dir, exist_ok=True)
 
     sound = AudioSegment.from_file(audio_path)
