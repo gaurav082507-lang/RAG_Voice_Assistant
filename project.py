@@ -1,39 +1,40 @@
-from dotenv import load_dotenv
-load_dotenv()
+import os
+import subprocess
 
-from whisper_model import model
 from langchain_mistralai import MistralAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pydub import AudioSegment
 from langchain_community.document_loaders import PyPDFLoader
-import subprocess
-import os
+from pydub import AudioSegment
 
-def build_retriever(file_path:str):
-    data=PyPDFLoader(file_path=file_path)
-    docs=data.load()
-    splitter=RecursiveCharacterTextSplitter(
+from whisper_model import model
+
+
+def build_retriever(file_path: str):
+    data = PyPDFLoader(file_path=file_path)
+    docs = data.load()
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200
     )
-    embedding_model=MistralAIEmbeddings(model='mistral-embed-2312')
-    chunk_docs=splitter.split_documents(docs)
-    vectorstore=FAISS.from_documents(
+    embedding_model = MistralAIEmbeddings(model='mistral-embed-2312')
+    chunk_docs = splitter.split_documents(docs)
+    vectorstore = FAISS.from_documents(
         documents=chunk_docs,
         embedding=embedding_model
     )
-    retriever=vectorstore.as_retriever(
-        search_='mmr',
+    retriever = vectorstore.as_retriever(
+        search_type='mmr',
         search_kwargs={
-            'k':5,
-            'fetch_k':20,
-            'lambda_mult':0.5
+            'k': 5,
+            'fetch_k': 20,
+            'lambda_mult': 0.5
         }
     )
     return retriever
 
-def audio_to_chunks(audio_path:str, output_dir: str = "chunks"):
+
+def audio_to_chunks(audio_path: str, output_dir: str = "chunks"):
     os.makedirs(output_dir, exist_ok=True)
 
     sound = AudioSegment.from_file(audio_path)
@@ -51,30 +52,21 @@ def audio_to_chunks(audio_path:str, output_dir: str = "chunks"):
 
     return chunk_audio_path
 
+
 def transcribe_all(chunk_audio_path):
-    transcription=""
+    transcription = ""
     for chunk_audio in chunk_audio_path:
-        result=model.transcribe(chunk_audio)
-        main_text=result['text']
-        transcription=transcription+" "+main_text
-    
+        result = model.transcribe(chunk_audio)
+        main_text = result['text']
+        transcription = transcription + " " + main_text
+
     return transcription
 
-def text_to_speech(response:str):
-    subprocess.run([
-        "piper",
-        "--model", "en_US-lessac-medium.onnx",
-        "--output_file", "response.wav"
-    ], input=response.encode(), check=True)
 
-
-
-
-
-
-
-
-        
-
-
-
+def text_to_speech(response: str, output_path: str = "response.wav"):
+    subprocess.run(
+        ["piper", "--model", "en_US-lessac-medium.onnx", "--output_file", output_path],
+        input=response.encode(),
+        check=True
+    )
+    return output_path
