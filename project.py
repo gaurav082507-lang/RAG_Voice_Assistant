@@ -12,8 +12,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 
-from project import build_retriever, transcribe_all, audio_to_chunks, text_to_speech
-
 
 # ---------------------------------------------------------------------------
 # Page config
