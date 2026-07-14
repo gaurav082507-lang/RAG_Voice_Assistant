@@ -65,7 +65,7 @@ def transcribe_all(chunk_audio_path):
 
 def text_to_speech(response: str, output_path: str = "response.wav"):
     subprocess.run(
-        ["piper", "--model", "en_US-lessac-medium.onnx", "--output_file", output_path],
+        ["piper", "--model", "models/en_US-lessac-medium.onnx", "--output_file", output_path],
         input=response.encode(),
         check=True
     )
