@@ -12,7 +12,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 
-from project import build_retriever, transcribe_all, audio_chunks, text_to_speech
+from project import build_retriever, transcribe_all, audio_to_chunks, text_to_speech
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +102,25 @@ st.markdown(
         display: inline-block;
         margin-bottom: 10px;
     }
+    .recorder-card {
+        background-color: #111827;
+        border: 1px solid #374151;
+        border-radius: 16px;
+        padding: 24px 26px;
+        margin: 0 auto;
+        max-width: 420px;
+    }
+    .recorder-title {
+        color: #e5e7eb;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+    .recorder-caption {
+        color: #9ca3af;
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -182,14 +201,6 @@ with st.sidebar:
     pdf_file = st.file_uploader("Upload a PDF", type=["pdf"])
 
     st.markdown("---")
-    st.markdown("#### 🎤 Ask by Voice")
-    st.caption("Record your question, or upload an audio file instead.")
-    recorded_audio = st.audio_input("Record your question")
-    uploaded_audio = st.file_uploader(
-        "...or upload an audio file", type=["wav", "mp3", "m4a", "ogg"]
-    )
-
-    st.markdown("---")
     run_clicked = st.button("🚀 Run Analysis", use_container_width=True, type="primary")
 
 # ---------------------------------------------------------------------------
@@ -217,10 +228,25 @@ st.markdown(
 
 if not run_clicked:
     st.markdown(
-        '<div class="hint-box">👉 Upload a PDF and record or upload your question in the sidebar, '
+        '<div class="hint-box">👉 Upload a PDF in the sidebar, record your question on the right, '
         "then click <b>Run Analysis</b> to get started.</div>",
         unsafe_allow_html=True,
     )
+
+# ---------------------------------------------------------------------------
+# Voice recorder — centered, positioned to the right
+# ---------------------------------------------------------------------------
+left_col, right_col = st.columns([1, 1])
+
+with right_col:
+    st.markdown('<div class="recorder-card">', unsafe_allow_html=True)
+    st.markdown('<div class="recorder-title">🎤 Record your question</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="recorder-caption">Click the mic, allow browser microphone access, speak, then click stop.</div>',
+        unsafe_allow_html=True,
+    )
+    recorded_audio = st.audio_input("Record your question", label_visibility="collapsed")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Pipeline execution
@@ -230,8 +256,8 @@ if run_clicked:
         st.error("Please upload a PDF document first.")
         st.stop()
 
-    if recorded_audio is None and uploaded_audio is None:
-        st.error("Please record your question or upload an audio file first.")
+    if recorded_audio is None:
+        st.error("Please record your question using the mic on the right first.")
         st.stop()
 
     work_dir = tempfile.mkdtemp(prefix="voicedoc_")
@@ -247,15 +273,13 @@ if run_clicked:
             st.session_state.retriever = build_retriever(pdf_path)
             st.session_state.pdf_name = pdf_file.name
 
-    # Save audio (recorded takes priority over uploaded)
-    audio_source = recorded_audio if recorded_audio is not None else uploaded_audio
-    audio_ext = ".wav" if recorded_audio is not None else os.path.splitext(uploaded_audio.name)[1]
-    audio_path = os.path.join(work_dir, f"question{audio_ext}")
+    # Save recorded audio
+    audio_path = os.path.join(work_dir, "question.wav")
     with open(audio_path, "wb") as f:
-        f.write(audio_source.getbuffer())
+        f.write(recorded_audio.getbuffer())
 
     with st.spinner("Transcribing your question..."):
-        chunk_audio_path = audio_chunks(audio_path, output_dir=os.path.join(work_dir, "chunks"))
+        chunk_audio_path = audio_to_chunks(audio_path, output_dir=os.path.join(work_dir, "chunks"))
         query = transcribe_all(chunk_audio_path=chunk_audio_path)
         st.session_state.transcript = query
 
