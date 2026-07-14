@@ -234,19 +234,33 @@ if not run_clicked:
     )
 
 # ---------------------------------------------------------------------------
-# Voice recorder — centered, positioned to the right
+# How it works + Voice recorder — balanced two-column row
 # ---------------------------------------------------------------------------
-left_col, right_col = st.columns([1, 1])
+st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+left_col, right_col = st.columns([1, 1], gap="large")
+
+with left_col:
+    with st.container(border=True):
+        st.markdown('<div class="recorder-title">⚡ How it works</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="recorder-caption">'
+            "1. Upload a PDF in the sidebar.<br>"
+            "2. Record your question on the right.<br>"
+            "3. Click Run Analysis and get a spoken answer."
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
 with right_col:
-    st.markdown('<div class="recorder-card">', unsafe_allow_html=True)
-    st.markdown('<div class="recorder-title">🎤 Record your question</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="recorder-caption">Click the mic, allow browser microphone access, speak, then click stop.</div>',
-        unsafe_allow_html=True,
-    )
-    recorded_audio = st.audio_input("Record your question", label_visibility="collapsed")
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="recorder-title">🎤 Record your question</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="recorder-caption">Click the mic, allow browser microphone access, speak, then click stop.</div>',
+            unsafe_allow_html=True,
+        )
+        recorded_audio = st.audio_input("Record your question", label_visibility="collapsed")
+
+st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Pipeline execution
